@@ -209,6 +209,38 @@
                 return;
             }
             
+            // 総人数が5で割り切れる場合の特別処理
+            if (total % 5 === 0) {
+                const peoplePerTeam = total / teamCount;
+                
+                if (peoplePerTeam === 5) {
+                    // 全チーム5名の場合
+                    let teamData = [];
+                    const baseFemalePerTeam = Math.floor(female / teamCount);
+                    const extraFemaleTeams = female % teamCount;
+                    
+                    let remainingMales = male;
+                    
+                    for (let i = 0; i < teamCount; i++) {
+                        const femalesInTeam = baseFemalePerTeam + (i < extraFemaleTeams ? 1 : 0);
+                        const malesInTeam = 5 - femalesInTeam;
+                        
+                        teamData.push({
+                            teamNumber: i + 1,
+                            male: malesInTeam,
+                            female: femalesInTeam,
+                            size: 5,
+                            isFiveTeam: true
+                        });
+                        
+                        remainingMales -= malesInTeam;
+                    }
+                    
+                    displayResult(teamData, 0, total, male, female, teamCount);
+                    return;
+                }
+            }
+            
             // 女性の均等配分を計算
             const baseFemalePerTeam = Math.floor(female / teamCount);
             const extraFemaleTeams = female % teamCount;
