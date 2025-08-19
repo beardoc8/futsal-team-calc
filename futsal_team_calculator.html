@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>フットサルチーム分け計算機</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+            margin-top: 20px;
+        }
+        
+        .result h3 {
+            color: #27ae60;
+            margin-top: 0;
+        }
+        
+        .team-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .team {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .team h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        .team.five-member {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .explanation {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-top: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            margin: 15px 0;
+            color: #1976d2;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f44336;
+            margin-top: 20px;
+        }
+        
+        .process {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚽ フットサルチーム分け計算機</h1>
+        
+        <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+            <strong>📋 基本仕様:</strong><br>
+            • 1チーム最大5名<br>
+            • 5名チーム = キーパー交代制（男性がキーパー担当）<br>
+            • 4名チーム = 助っ人キーパー<br>
+            • 3名チーム = フィールド・キーパー助っ人<br>
+            • 目的: 女性が少ないチームを5名チーム（キーパー交代制）にする<br>
+            • 女性人数の差は最大1名まで
+        </div>
+        
+        <div class="input-group">
+            <label for="male">男性の人数:</label>
+            <input type="number" id="male" min="1" value="13" placeholder="男性の人数を入力">
+        </div>
+        
+        <div class="input-group">
+            <label for="female">女性の人数:</label>
+            <input type="number" id="female" min="0" value="9" placeholder="女性の人数を入力">
+        </div>
+        
+        <div class="input-group">
+            <label for="teams">チーム数:</label>
+            <input type="number" id="teams" min="2" value="5" placeholder="チーム数を入力">
+        </div>
+        
+        <button class="calculate-btn" onclick="calculateTeams()">チーム分けを計算</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function calculateTeams() {
+            const male = parseInt(document.getElementById('male').value) || 0;
+            const female = parseInt(document.getElementById('female').value) || 0;
+            const teamCount = parseInt(document.getElementById('teams').value) || 0;
+            const total = male + female;
+            
+            const resultDiv = document.getElementById('result');
+            
+            if (total < 6) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>エラー:</strong> 最低6名必要です（現在: ${total}名）
+                    </div>
+                `;
+                return;
+            }
+            
+            if (teamCount < 2) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>エラー:</strong> チーム数は2以上である必要があります
+                    </div>
+                `;
+                return;
+            }
+            
+            // 女性の均等配分を計算
+            const baseFemalePerTeam = Math.floor(female / teamCount);
+            const extraFemaleTeams = female % teamCount;
+            
+            // 各チームの女性人数を決定
+            let femaleDistribution = [];
+            for (let i = 0; i < teamCount; i++) {
+                femaleDistribution.push(baseFemalePerTeam + (i < extraFemaleTeams ? 1 : 0));
+            }
+            
+            // 4名体制での男性配分を計算
+            const remainingMales = male;
+            let maleDistribution = [];
+            let tempMales = remainingMales;
+            
+            for (let i = 0; i < teamCount; i++) {
+                const femalesInTeam = femaleDistribution[i];
+                const malesInTeam = Math.min(tempMales, 4 - femalesInTeam);
+                maleDistribution.push(malesInTeam);
+                tempMales -= malesInTeam;
+            }
+            
+            // 残り男性を計算
+            const remainingAdjustment = tempMales;
+            
+            // 5名チームを決定（女性が少ないチームを優先）
+            let teamData = [];
+            for (let i = 0; i < teamCount; i++) {
+                teamData.push({
+                    originalIndex: i,
+                    male: maleDistribution[i],
+                    female: femaleDistribution[i],
+                    size: 4,
+                    isFiveTeam: false
+                });
+            }
+            
+            // 女性が少ない順にソートして調整男性を配置
+            teamData.sort((a, b) => {
+                if (a.female !== b.female) {
+                    return a.female - b.female; // 女性少ない順
+                }
+                return a.originalIndex - b.originalIndex; // 同数なら元の順番
+            });
+            
+            // 調整男性を配置
+            for (let i = 0; i < remainingAdjustment; i++) {
+                if (i < teamCount && teamData[i].size < 5) {
+                    teamData[i].male++;
+                    teamData[i].size++;
+                    teamData[i].isFiveTeam = true;
+                }
+            }
+            
+            // 5名チームを若い番号順に並び替え
+            teamData.sort((a, b) => {
+                if (a.isFiveTeam && !b.isFiveTeam) return -1;
+                if (!a.isFiveTeam && b.isFiveTeam) return 1;
+                if (a.isFiveTeam && b.isFiveTeam) {
+                    return a.female - b.female; // 女性少ない順
+                }
+                return a.originalIndex - b.originalIndex;
+            });
+            
+            // チーム番号を再割り当て
+            teamData.forEach((team, index) => {
+                team.teamNumber = index + 1;
+            });
+            
+            displayResult(teamData, remainingAdjustment, total, male, female, teamCount);
+        }
+        
+        function displayResult(teamData, adjustmentCount, total, male, female, teamCount) {
+            const fiveTeamCount = teamData.filter(team => team.isFiveTeam).length;
+            
+            let html = `
+                <div class="result">
+                    <h3>📊 計算結果</h3>
+                    <p><strong>総人数:</strong> ${total}名（男性: ${male}名、女性: ${female}名）</p>
+                    <p><strong>チーム数:</strong> ${teamCount}チーム</p>
+                    
+                    <div class="highlight">
+                        調整人数: <strong>${adjustmentCount}名</strong>
+                        ${adjustmentCount === 0 ? '<br><small>（調整不要）</small>' : ''}
+                    </div>
+                    
+                    <div class="team-info">
+            `;
+            
+            teamData.forEach(team => {
+                html += `
+                    <div class="team ${team.isFiveTeam ? 'five-member' : ''}">
+                        <h4>チーム ${team.teamNumber} (${team.size}名)</h4>
+                        <p><strong>👨 男性: ${team.male}名 | 👩 女性: ${team.female}名</strong></p>
+                        <p>${team.isFiveTeam ? '✅ キーパー交代制' : team.size === 4 ? '🤝 助っ人キーパー' : '🔄 フィールド・キーパー助っ人'}</p>
+                        ${team.isFiveTeam ? '<p>💪 女性少なめで男性多めに調整済み</p>' : ''}
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    
+                    <div class="explanation">
+                        <strong>📝 並び方:</strong><br>
+                        1. 男性${male}名が一列に並ぶ<br>
+                        2. 女性${female}名が一列に並ぶ<br>
+                        ${adjustmentCount > 0 ? `3. 最後に調整用男性${adjustmentCount}名が並ぶ<br>` : ''}
+                        ${adjustmentCount > 0 ? '4' : '3'}. 全体を1, 2, 3${teamCount > 3 ? ', 4' : ''}${teamCount > 4 ? ', 5' : ''}${teamCount > 5 ? '...' : ''}, 1, 2, 3... の順で振り分け
+                        ${fiveTeamCount === 0 ? '<br><br><strong>💡 5名チームがないため調整は不要です</strong>' : ''}
+                        <br><br><strong>🎯 女性が少ないチームを優先的に5名チーム（キーパー交代制）にしています</strong>
+                    </div>
+            `;
+            
+            if (adjustmentCount > 0) {
+                html += `
+                    <div class="process">
+                        <strong>🔄 配置プロセス:</strong><br>
+                        1. 女性を均等配分（最大差1名）<br>
+                        2. 各チーム4名体制で男性を配分<br>
+                        3. 残り男性${adjustmentCount}名を女性が少ないチームから順に追加<br>
+                        4. ${fiveTeamCount}つの5名チーム（キーパー交代制）を若い番号で表示
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+            
+            document.getElementById('result').innerHTML = html;
+        }
+        
+        // ページ読み込み時に初期計算
+        window.onload = function() {
+            calculateTeams();
+        };
+        
+        // Enterキーで計算実行
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateTeams();
+            }
+        });
+    </script>
+</body>
+</html>
